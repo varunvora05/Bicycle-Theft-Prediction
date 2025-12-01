@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Bicycle Theft Prediction</title>
+
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #dfe9f3 0%, #ffffff 100%);
+            color: #333;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 860px;
+            margin: 40px auto;
+            padding: 35px 40px;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 8px 26px rgba(0,0,0,0.1);
+            animation: fadeIn 0.7s ease;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Headings */
+        h1 {
+            text-align: center;
+            font-size: 30px;
+            color: #222;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Form Grid */
+        form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 18px 22px;
+        }
+
+        /* Label */
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* Input & Select */
+        input,
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fafafa;
+            transition: 0.2s ease-in-out;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #007bff;
+            background: #fff;
+            box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+            outline: none;
+        }
+
+        /* Submit Button */
+        button {
+            grid-column: 1 / -1;
+            padding: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.25s ease-in-out;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #0056b3, #003f8a);
+            transform: translateY(-2px);
+        }
+
+        /* Result / Error Boxes */
+        .result {
+            margin-top: 25px;
+            padding: 15px 18px;
+            border-radius: 10px;
+            background: #e9fff1;
+            border-left: 6px solid #34c759;
+            color: #155724;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .error {
+            margin-top: 25px;
+            padding: 15px 18px;
+            border-radius: 10px;
+            background: #ffeaea;
+            border-left: 6px solid #ff3b30;
+            color: #8b1e1e;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Toronto Bicycle Theft Prediction</h1>
+    <p class="subtitle">Enter details below to predict if the stolen bike is likely to be <b>Recovered</b>.</p>
+
+    {% if prediction %}
+    <div class="result">
+        <b>Prediction:</b> {{ prediction }} <br>
+        <b>Recovery Probability:</b> {{ probability }}
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/predict-form">
+
+        <div>
+            <label>Occurrence Year</label>
+            <input type="number" name="OCC_YEAR" value="{{ form_values.OCC_YEAR if form_values else '' }}">
+        </div>
+
+        <div>
+            <label>Occurrence Month</label>
+            <select name="OCC_MONTH">
+                <option value="">-- Select Month --</option>
+                {% for m in ["January","February","March","April","May","June",
+                             "July","August","September","October","November","December"] %}
+                <option value="{{ m }}"
+                {% if form_values and form_values.OCC_MONTH == m %}selected{% endif %}>
+                    {{ m }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label>Day of Week</label>
+            <select name="OCC_DOW">
+                <option value="">-- Select Day --</option>
+                {% for d in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] %}
+                <option value="{{ d }}"
+                {% if form_values and form_values.OCC_DOW == d %}selected{% endif %}>
+                    {{ d }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label>Occurrence Hour</label>
+            <input type="number" name="OCC_HOUR" min="0" max="23"
+                   value="{{ form_values.OCC_HOUR if form_values else '' }}">
+        </div>
+
+        <div>
+            <label>Police Division</label>
+            <input type="text" name="DIVISION" placeholder="e.g. D14"
+                   value="{{ form_values.DIVISION if form_values else '' }}">
+        </div>
+
+        <div>
+            <label>Bike Type</label>
+            <input type="text" name="BIKE_TYPE" placeholder="e.g. Mountain, Road"
+                   value="{{ form_values.BIKE_TYPE if form_values else '' }}">
+        </div>
+
+        <div>
+            <label>Bike Colour</label>
+            <input type="text" name="BIKE_COLOUR" placeholder="e.g. Black"
+                   value="{{ form_values.BIKE_COLOUR if form_values else '' }}">
+        </div>
+
+        <div>
+            <label>Bike Speed (gears)</label>
+            <input type="number" name="BIKE_SPEED"
+                   value="{{ form_values.BIKE_SPEED if form_values else '' }}">
+        </div>
+
+        <div>
+            <label>Location Type</label>
+            <input type="text" name="LOCATION_TYPE" placeholder="e.g. Outside, Garage"
+                   value="{{ form_values.LOCATION_TYPE if form_values else '' }}">
+        </div>
+
+        <div>
+            <label>Bike Cost ($)</label>
+            <input type="number" step="0.01" name="BIKE_COST"
+                   value="{{ form_values.BIKE_COST if form_values else '' }}">
+        </div>
+
+        <button type="submit">Predict</button>
+    </form>
+
+    <div class="footer">
+        COMP309 – Bicycle Theft Prediction • Varun Vora | Joy Gandhi | Jiyanne Kate Tuazon
+    </div>
+
+</div>
+
+</body>
+</html>
