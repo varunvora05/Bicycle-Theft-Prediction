@@ -22,11 +22,10 @@ app = Flask(__name__)
 # =======================
 # LOAD MODEL + FEATURES
 # =======================
-BASE_DIR = r"C:\Users\HP\Downloads\COMP309_BicycleTheftProject"
-MODEL_DIR = os.path.join(BASE_DIR, "model")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-MODEL_FILE = os.path.join(MODEL_DIR, "bike_best_model.pkl")
-FEATURES_FILE = os.path.join(MODEL_DIR, "bike_features.pkl")
+MODEL_FILE = os.path.join(BASE_DIR, "bike_best_model.pkl")
+FEATURES_FILE = os.path.join(BASE_DIR, "bike_features.pkl")
 
 model = pickle.load(open(MODEL_FILE, "rb"))
 feature_names = pickle.load(open(FEATURES_FILE, "rb"))
@@ -139,4 +138,4 @@ def predict_json():
 # RUN SERVER
 # =======================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
